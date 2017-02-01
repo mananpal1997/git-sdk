@@ -1,7 +1,6 @@
-from urllib2 import HTTPSHandler, Request, build_opener
+from urllib2 import HTTPSHandler, Request, build_opener, HTTPError
 import json
 import base64
-import urllib
 
 methods = ["GET", "POST", "PUT"]
 URL = "https://api.github.com"
@@ -49,10 +48,13 @@ class Github(object):
 		req.get_method = lambda: method
 		req.add_header('Authorization', self.authorization)
 		req.add_header('Content-Type', 'application/x-www-form-urlencoded')
-		res = opener.open(req, timeout = 60)
 		try:
 			res = opener.open(req, timeout = 60)
 			return res.read().decode('utf-8')
-		except:
-			print "Error"
-			return
+		except HTTPError as e:
+			if e.code == 401:
+				raise Exception("Bad Credentials")
+			elif e.code == 404:
+				raise Exception("Api Not Found")
+			else:
+				raise Exception("Unknown Error Occurred")
