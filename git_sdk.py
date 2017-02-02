@@ -29,11 +29,13 @@ class QueryHook(object):
 
 
 class Github(object):
-	def __init__(self, username, password):
+	def __init__(self, username = None, password = None):
 		self.username = username
 		self.password = password
-		auth = base64.b64encode(bytes('%s:%s' % (username, password)), 'utf-8').decode('ascii')
-		self.authorization = "Basic %s" % auth
+		self.authorization = None
+		if username and password:
+			auth = base64.b64encode(bytes('%s:%s' % (username, password)), 'utf-8').decode('ascii')
+			self.authorization = "Basic %s" % auth
 
 	def __getattr__(self, attr):
 		return QueryHook(self, "/" + attr)
@@ -46,7 +48,8 @@ class Github(object):
 		opener = build_opener(HTTPSHandler)
 		req = Request(url, data)
 		req.get_method = lambda: method
-		req.add_header('Authorization', self.authorization)
+		if self.authorization:
+			req.add_header('Authorization', self.authorization)
 		req.add_header('Content-Type', 'application/x-www-form-urlencoded')
 		try:
 			res = opener.open(req, timeout = 60)
