@@ -1,6 +1,7 @@
 from urllib2 import HTTPSHandler, Request, build_opener, HTTPError
 import json
 import base64
+import urllib
 
 methods = ["GET", "POST", "PUT"]
 URL = "https://api.github.com"
@@ -42,6 +43,11 @@ class Github(object):
 
 	def http_call(self, method, query, **kw):
 		data = None
+		if method == "GET" and kw:
+			queries = list()
+			for x, y in kw.items():
+				queries.append(urllib.quote(x) + "=" + urllib.quote(y))
+			query = query + "?" + "&".join(queries)
 		if method in ["POST", "PUT"]:
 			data = json.dumps(kw)
 		url = URL + query
